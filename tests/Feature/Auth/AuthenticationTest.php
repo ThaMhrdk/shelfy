@@ -11,7 +11,7 @@ test('login screen can be rendered', function () {
         ->assertStatus(200)
         ->assertSee('Login SHELFY')
         ->assertDontSee('Akun admin awal')
-        ->assertDontSee('admin@shelfy.test')
+        ->assertDontSee('admin@gmail.com')
         ->assertDontSee('admin123');
 });
 

@@ -344,7 +344,7 @@ test('student can add books to cart checkout and open loan detail', function () 
         ->assertSee('Menunggu Diambil');
 });
 
-test('pustakawan can process pickup and legacy kepala role behaves as admin', function () {
+test('admin and pustakawan can process pickup', function () {
     $book = Book::query()->create([
         'judul' => 'Role Pustakawan',
         'penulis' => 'SHELFY',
@@ -382,18 +382,15 @@ test('pustakawan can process pickup and legacy kepala role behaves as admin', fu
         'status' => 'menunggu_diambil',
     ]);
     $pustakawan = User::factory()->create(['role' => 'pustakawan']);
-    $kepala = User::factory()->create(['role' => 'kepala_pustakawan']);
+    $admin = User::factory()->create(['role' => 'admin']);
 
-    expect($kepala->isAdmin())->toBeTrue();
-    expect(Shelfy::statusLabel('kepala_pustakawan'))->toBe('Admin');
-
-    $this->actingAs($kepala)
+    $this->actingAs($admin)
         ->get('/dashboard')
         ->assertOk()
         ->assertSee('Admin');
 
-    $this->actingAs($kepala)
-        ->post(route('loans.pickup', Shelfy::id($loan)), ['bukti_pengambilan' => 'Kepala cek'])
+    $this->actingAs($admin)
+        ->post(route('loans.pickup', Shelfy::id($loan)), ['bukti_pengambilan' => 'Admin cek'])
         ->assertRedirect()
         ->assertSessionHas('success');
 

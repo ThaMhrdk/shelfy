@@ -7,6 +7,7 @@ use App\Models\Loan;
 use App\Support\Shelfy;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -146,17 +147,10 @@ class BookController extends Controller
             return $current;
         }
 
-        $file = $request->file('cover');
-        $name = Str::slug(pathinfo((string) $file->getClientOriginalName(), PATHINFO_FILENAME));
-        $filename = ($name ?: 'cover') . '-' . Str::random(8) . '.' . $file->getClientOriginalExtension();
-        $directory = public_path('covers');
-
-        if (! is_dir($directory)) {
-            mkdir($directory, 0775, true);
+        if ($current && ! Str::startsWith($current, ['http://', 'https://', '/', 'storage/']) && ! file_exists(public_path($current))) {
+            Storage::disk('public')->delete($current);
         }
 
-        $file->move($directory, $filename);
-
-        return 'covers/' . $filename;
+        return $request->file('cover')->store('covers', 'public');
     }
 }

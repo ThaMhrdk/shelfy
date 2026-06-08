@@ -36,7 +36,6 @@ class Shelfy
             'terlambat' => 'Terlambat',
             'admin' => 'Admin',
             'pustakawan' => 'Pustakawan',
-            'kepala_pustakawan' => 'Admin',
             'mahasiswa' => 'Mahasiswa',
             'belum_bayar' => 'Belum Bayar',
             'menunggu_konfirmasi' => 'Menunggu Konfirmasi',
@@ -63,6 +62,29 @@ class Shelfy
         $second = strtoupper(substr((string) ($words[1] ?? ''), 0, 1));
 
         return $first . ($second !== '' ? $second : '');
+    }
+
+    public static function fileUrl(?string $path): ?string
+    {
+        $path = trim((string) $path);
+
+        if ($path === '') {
+            return null;
+        }
+
+        if (Str::startsWith($path, ['http://', 'https://', '/'])) {
+            return $path;
+        }
+
+        if (Str::startsWith($path, 'storage/')) {
+            return asset($path);
+        }
+
+        if (file_exists(public_path($path))) {
+            return asset($path);
+        }
+
+        return asset('storage/' . ltrim($path, '/'));
     }
 
     public static function id(object|string|null $model): string

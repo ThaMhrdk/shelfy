@@ -26,6 +26,7 @@ class ProfileUpdateRequest extends FormRequest
             'prodi' => ['nullable', 'string', 'max:255'],
             'no_hp' => ['nullable', 'string', 'max:100'],
             'alamat' => ['nullable', 'string', 'max:255'],
+            'photo' => ['nullable', 'image', 'max:2048'],
         ];
     }
 }

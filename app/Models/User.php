@@ -13,7 +13,7 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
-    public const DEFAULT_ADMIN_EMAIL = 'admin@shelfy.test';
+    public const DEFAULT_ADMIN_EMAIL = 'admin@gmail.com';
     public const DEFAULT_ADMIN_PASSWORD = 'admin123';
 
     protected $collection = 'users';
@@ -30,6 +30,7 @@ class User extends Authenticatable
         'alamat',
         'member_id',
         'status',
+        'avatar_path',
     ];
 
     protected $hidden = [
@@ -57,7 +58,7 @@ class User extends Authenticatable
 
     public function isAdmin(): bool
     {
-        return in_array(($this->role ?? 'mahasiswa'), ['admin', 'kepala_pustakawan'], true);
+        return ($this->role ?? 'mahasiswa') === 'admin';
     }
 
     public function isLibrarian(): bool
@@ -67,7 +68,7 @@ class User extends Authenticatable
 
     public function isHeadLibrarian(): bool
     {
-        return $this->isAdmin();
+        return false;
     }
 
     public function isStaff(): bool

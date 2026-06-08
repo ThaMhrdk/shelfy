@@ -10,7 +10,13 @@
 
     <section class="profile-grid">
         <article class="panel profile-summary">
-            <span class="avatar large">{{ Shelfy::initials($user) }}</span>
+            <span class="avatar large">
+                @if ($user->avatar_path)
+                    <img src="{{ Shelfy::fileUrl($user->avatar_path) }}" alt="Foto {{ $user->displayName() }}">
+                @else
+                    {{ Shelfy::initials($user) }}
+                @endif
+            </span>
             <h2>{{ $user->displayName() }}</h2>
             <p>{{ $user->email }}</p>
             <span class="badge {{ Shelfy::statusClass($user->role ?? 'mahasiswa') }}">{{ Shelfy::statusLabel($user->role ?? 'mahasiswa') }}</span>
@@ -24,7 +30,7 @@
 
         <article class="panel">
             <h2>Edit Profil</h2>
-            <form class="stack-form two-column-form" method="post" action="{{ route('profile.update') }}">
+            <form class="stack-form two-column-form" method="post" action="{{ route('profile.update') }}" enctype="multipart/form-data">
                 @csrf
                 @method('patch')
 
@@ -36,6 +42,13 @@
                     <input type="email" name="email" value="{{ old('email', $user->email) }}" required>
                     @error('email') <span class="form-error">{{ $message }}</span> @enderror
                 </label>
+                @if ($user->isStaff())
+                    <label>Foto Profil
+                        <input type="file" name="photo" accept="image/*">
+                        <small>Disimpan di storage/app/public/profile-photos dan diakses lewat public/storage.</small>
+                        @error('photo') <span class="form-error">{{ $message }}</span> @enderror
+                    </label>
+                @endif
                 @if ($user->isStudent())
                     <label>NIM
                         <input value="{{ $user->nim ?: '-' }}" disabled>

@@ -203,8 +203,11 @@ Akun ini dibuat lewat seeder, bukan ditampilkan di halaman login.
 
 ```text
 Admin:
-admin@shelfy.test / admin123
+admin@gmail.com / admin123
+
+Pustakawan:
+pustakawan@gmail.com / pustaka123
 
 Mahasiswa:
-student@shelfy.test / student123
+michael@gmail.com / mahasiswa123
 ```

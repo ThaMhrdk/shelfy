@@ -34,7 +34,13 @@
     </a>
 
     <div class="user-card">
-        <span class="avatar">{{ Shelfy::initials($user) }}</span>
+        <span class="avatar">
+            @if ($user?->avatar_path)
+                <img src="{{ Shelfy::fileUrl($user->avatar_path) }}" alt="Foto {{ $user->displayName() }}">
+            @else
+                {{ Shelfy::initials($user) }}
+            @endif
+        </span>
         <span>
             <strong>{{ $user?->displayName() ?? 'Pengguna' }}</strong>
             <small>{{ Shelfy::statusLabel($user?->role ?? 'mahasiswa') }}</small>

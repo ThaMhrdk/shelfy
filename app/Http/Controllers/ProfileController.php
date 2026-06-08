@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -30,6 +31,7 @@ class ProfileController extends Controller
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $payload = $request->validated();
+        unset($payload['photo']);
         $payload['nama'] = $payload['name'];
 
         $existing = User::query()->where('email', $payload['email'])->first();
@@ -40,6 +42,16 @@ class ProfileController extends Controller
         }
 
         $request->user()->fill($payload);
+
+        if ($request->hasFile('photo')) {
+            abort_unless($request->user()->isStaff(), 403, 'Foto profil petugas hanya untuk admin atau pustakawan.');
+
+            if ($request->user()->avatar_path) {
+                Storage::disk('public')->delete((string) $request->user()->avatar_path);
+            }
+
+            $request->user()->avatar_path = $request->file('photo')->store('profile-photos', 'public');
+        }
 
         if ($request->user()->isDirty('email')) {
             $request->user()->email_verified_at = null;

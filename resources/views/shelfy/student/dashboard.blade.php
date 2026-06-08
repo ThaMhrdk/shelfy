@@ -72,7 +72,7 @@
                 <a class="popular-book" href="{{ route('student.books.show', Shelfy::id($book)) }}">
                     <div class="book-cover medium">
                         @if ($book->cover_path)
-                            <img src="{{ asset($book->cover_path) }}" alt="Cover {{ $book->judul }}">
+                            <img src="{{ Shelfy::fileUrl($book->cover_path) }}" alt="Cover {{ $book->judul }}">
                         @else
                             <span>{{ strtoupper(substr($book->judul, 0, 1)) }}</span>
                         @endif

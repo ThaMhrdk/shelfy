@@ -13,7 +13,7 @@
         <article class="panel detail-hero">
             <div class="book-cover large">
                 @if ($book->cover_path)
-                    <img src="{{ asset($book->cover_path) }}" alt="Cover {{ $book->judul }}">
+                    <img src="{{ Shelfy::fileUrl($book->cover_path) }}" alt="Cover {{ $book->judul }}">
                 @else
                     <span>{{ strtoupper(substr($book->judul, 0, 1)) }}</span>
                 @endif

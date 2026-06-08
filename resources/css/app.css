@@ -156,6 +156,13 @@ textarea:focus {
     font-size: 24px;
 }
 
+.avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    object-fit: cover;
+}
+
 .user-card strong,
 .user-card small {
     display: block;

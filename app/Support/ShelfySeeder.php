@@ -20,15 +20,9 @@ class ShelfySeeder
             ],
             [
                 'name' => 'Pustakawan SHELFY',
-                'email' => 'pustakawan@shelfy.test',
+                'email' => 'pustakawan@gmail.com',
                 'password' => 'pustaka123',
                 'role' => 'pustakawan',
-            ],
-            [
-                'name' => 'Admin Kepala SHELFY',
-                'email' => 'kepala@shelfy.test',
-                'password' => 'kepala123',
-                'role' => 'admin',
             ],
         ];
 
@@ -52,12 +46,12 @@ class ShelfySeeder
         }
 
         $bookRows = [
-            ['Basis Data: Konsep dan Aplikasi', 'Ramez Elmasri', 'Teknologi Informasi', 'Informatika', 2022, '9786021514001', 12],
-            ['Sistem Informasi Manajemen', 'Kenneth Laudon', 'Manajemen', 'Salemba Empat', 2021, '9789790610002', 8],
-            ['Pemrograman Java', 'Harvey Deitel', 'Teknologi Informasi', 'Pearson', 2020, '9780134670942', 5],
-            ['Struktur Data dengan C', 'Seymour Lipschutz', 'Teknologi Informasi', 'McGraw Hill', 2019, '9780070380012', 3],
-            ['Pengantar Ekonomi Mikro', 'Sadono Sukirno', 'Ekonomi', 'Rajawali Pers', 2020, '9789797690007', 7],
-            ['Metodologi Penelitian', 'Sugiyono', 'Referensi', 'Alfabeta', 2021, '9786022890001', 6],
+            ['Sistem Tata Kelola Kota Cerdas', 'Bu Febi', 'Sistem Informasi Kota Cerdas', 'Fakultas Ilmu Terapan', 2024, '9786021514001', 12],
+            ['Basis Data II', 'Bu Maria', 'Sistem Informasi Kota Cerdas', 'Fakultas Ilmu Terapan', 2024, '9789790610002', 8],
+            ['Proyeksi Inovasi Kota Cerdas', 'Pak Asad', 'Sistem Informasi Kota Cerdas', 'Fakultas Ilmu Terapan', 2024, '9780134670942', 5],
+            ['Dasar Ilmu Data', 'Bu Vivi', 'Sistem Informasi Kota Cerdas', 'Fakultas Ilmu Terapan', 2024, '9780070380012', 3],
+            ['Visualisasi Data', 'Bu Vivi', 'Sistem Informasi Kota Cerdas', 'Fakultas Ilmu Terapan', 2024, '9789797690007', 7],
+            ['Pancasila', 'Pak Bambang', 'Umum', 'Telkom University', 2024, '9786022890001', 6],
         ];
 
         $books = [];
@@ -73,16 +67,16 @@ class ShelfySeeder
                 'stok_total' => $stock,
                 'stok_tersedia' => $stock,
                 'dipinjam_count' => 0,
-                'deskripsi' => 'Data contoh migrasi SHELFY dari native ke Laravel Breeze.',
+                'deskripsi' => 'Data contoh katalog SHELFY untuk TUBES Basis Data II berbasis MongoDB.',
                 'cover_path' => null,
             ]);
         }
 
         $memberRows = [
-            ['Alya Putri', '24104001', 'Sistem Informasi', 'alya@example.com', '081234567001', 'Bandung'],
-            ['Bima Pratama', '24104002', 'Informatika', 'bima@example.com', '081234567002', 'Cimahi'],
-            ['Citra Lestari', '24104003', 'Sistem Informasi', 'citra@example.com', '081234567003', 'Sumedang'],
-            ['Dimas Akbar', '24104004', 'Manajemen Informatika', 'dimas@example.com', '081234567004', 'Garut'],
+            ['Michael Eluzai', '70701240001', 'D4 Sistem Informasi Kota Cerdas', 'michael@gmail.com', '08123456789', 'Jalan Cikampek'],
+            ['Mumpuni Nur Idzati', '70701240002', 'D4 Sistem Informasi Kota Cerdas', 'mumpuni@gmail.com', '080808080808', 'Jalan PGA'],
+            ['Muhammad Fadhil Athallah', '70701240003', 'D4 Sistem Informasi Kota Cerdas', 'fadhil@gmail.com', '08234567891', 'Jalan Sukapura'],
+            ['Muhammad Anantha Mahardika Ridwan', '707012400122', 'D4 Sistem Informasi Kota Cerdas', 'anantha@gmail.com', '082157584633', 'Jalan Buah Batu'],
         ];
 
         $members = [];
@@ -97,13 +91,29 @@ class ShelfySeeder
                 'alamat' => $address,
                 'status' => 'aktif',
             ]);
+
+            $user = User::query()->create([
+                'name' => $name,
+                'nama' => $name,
+                'email' => $email,
+                'password' => 'mahasiswa123',
+                'role' => 'mahasiswa',
+                'nim' => $nim,
+                'prodi' => $prodi,
+                'no_hp' => $phone,
+                'alamat' => $address,
+                'member_id' => Shelfy::id($members[$name]),
+                'status' => 'aktif',
+            ]);
+
+            $members[$name]->update(['user_id' => Shelfy::id($user)]);
         }
 
         $loanRows = [
-            ['Basis Data: Konsep dan Aplikasi', 'Alya Putri', '-8 days', '+2 days', 'dipinjam'],
-            ['Sistem Informasi Manajemen', 'Bima Pratama', '-12 days', '-2 days', 'terlambat'],
-            ['Pemrograman Java', 'Citra Lestari', '-4 days', '+5 days', 'dipinjam'],
-            ['Basis Data: Konsep dan Aplikasi', 'Dimas Akbar', '-20 days', '-10 days', 'dikembalikan'],
+            ['Visualisasi Data', 'Michael Eluzai', '-2 days', '+5 days', 'dipinjam'],
+            ['Dasar Ilmu Data', 'Mumpuni Nur Idzati', '-4 days', '+3 days', 'menunggu_diambil'],
+            ['Basis Data II', 'Muhammad Fadhil Athallah', '-12 days', '-2 days', 'terlambat'],
+            ['Sistem Tata Kelola Kota Cerdas', 'Muhammad Anantha Mahardika Ridwan', '-20 days', '-10 days', 'dikembalikan'],
         ];
 
         foreach ($loanRows as [$bookTitle, $memberName, $borrowMod, $dueMod, $status]) {
@@ -129,6 +139,9 @@ class ShelfySeeder
                 'status' => $status,
                 'catatan' => 'Data contoh peminjaman migrasi.',
                 'dibuat_oleh' => 'Seeder SHELFY',
+                'tanggal_diambil' => $status === 'menunggu_diambil' ? null : $borrowDate . ' 09:00:00',
+                'bukti_pengambilan' => $status === 'menunggu_diambil' ? null : 'Kartu mahasiswa diverifikasi.',
+                'petugas_pengambilan' => $status === 'menunggu_diambil' ? null : 'Pustakawan SHELFY',
                 'petugas_pengembalian' => $status === 'dikembalikan' ? 'Admin SHELFY' : null,
                 'hari_terlambat' => $fine['hari_terlambat'],
                 'denda_per_hari' => $fine['denda_per_hari'],
