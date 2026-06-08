@@ -39,6 +39,7 @@
                     @endif
                 </td>
                 <td>
+                    <a class="button tiny" href="{{ route('student.loans.show', Shelfy::id($loan)) }}">Detail</a>
                     @if ($isReturned)
                         <a class="button tiny {{ (int) $fine['total_denda'] > 0 && $paymentStatus === 'belum_bayar' ? 'primary' : '' }}" href="{{ route('returns.receipt', Shelfy::id($loan)) }}">
                             {{ (int) $fine['total_denda'] > 0 && $paymentStatus === 'belum_bayar' ? 'Bayar' : 'Cetak PDF' }}

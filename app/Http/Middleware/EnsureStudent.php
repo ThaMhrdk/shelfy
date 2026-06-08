@@ -10,7 +10,7 @@ class EnsureStudent
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->user()?->isAdmin()) {
+        if (! $request->user()?->isStudent()) {
             abort(403, 'Halaman ini khusus bagian mahasiswa.');
         }
 

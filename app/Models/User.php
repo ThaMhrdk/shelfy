@@ -57,6 +57,26 @@ class User extends Authenticatable
 
     public function isAdmin(): bool
     {
-        return ($this->role ?? 'mahasiswa') === 'admin';
+        return in_array(($this->role ?? 'mahasiswa'), ['admin', 'kepala_pustakawan'], true);
+    }
+
+    public function isLibrarian(): bool
+    {
+        return $this->isAdmin() || ($this->role ?? 'mahasiswa') === 'pustakawan';
+    }
+
+    public function isHeadLibrarian(): bool
+    {
+        return $this->isAdmin();
+    }
+
+    public function isStaff(): bool
+    {
+        return $this->isAdmin() || ($this->role ?? 'mahasiswa') === 'pustakawan';
+    }
+
+    public function isStudent(): bool
+    {
+        return ($this->role ?? 'mahasiswa') === 'mahasiswa';
     }
 }

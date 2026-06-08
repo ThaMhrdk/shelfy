@@ -2,17 +2,12 @@
     <section class="page-heading">
         <div>
             <h1>Peminjaman</h1>
-            <p>Catat transaksi peminjaman dan pantau statusnya.</p>
+            <p>Pantau checkout mahasiswa, catat bukti pengambilan, dan teruskan ke proses pengembalian.</p>
         </div>
     </section>
 
-    <section class="content-grid">
-        <div class="panel wide">
-            @include('shelfy.partials.loan-filters')
-            @include('shelfy.partials.loans-table')
-        </div>
-        <aside class="panel sticky-form">
-            @include('shelfy.partials.loan-form')
-        </aside>
+    <section class="panel">
+        @include('shelfy.partials.loan-filters')
+        @include('shelfy.partials.loans-table')
     </section>
 </x-app-layout>

@@ -32,6 +32,9 @@ class Loan extends Model
         'paid_at',
         'confirmed_at',
         'confirmed_by',
+        'tanggal_diambil',
+        'bukti_pengambilan',
+        'petugas_pengambilan',
     ];
 
     protected function casts(): array
@@ -46,5 +49,10 @@ class Loan extends Model
     public function isReturned(): bool
     {
         return ($this->status ?? '') === 'dikembalikan';
+    }
+
+    public function isWaitingPickup(): bool
+    {
+        return ($this->status ?? '') === 'menunggu_diambil';
     }
 }

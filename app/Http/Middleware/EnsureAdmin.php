@@ -10,8 +10,8 @@ class EnsureAdmin
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (! $request->user()?->isAdmin()) {
-            abort(403, 'Halaman ini khusus bagian admin.');
+        if (! $request->user()?->isStaff()) {
+            abort(403, 'Halaman ini khusus bagian admin atau pustakawan.');
         }
 
         return $next($request);

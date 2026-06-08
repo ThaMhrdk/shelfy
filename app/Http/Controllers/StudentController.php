@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Book;
+use App\Models\CartItem;
 use App\Models\Loan;
 use App\Models\Member;
 use App\Support\Shelfy;
@@ -26,6 +27,7 @@ class StudentController extends Controller
                 'studentStats' => $this->studentStats($loans),
                 'books' => $books,
                 'loans' => $loans->take(5),
+                'topBooks' => Shelfy::topBorrowed(Book::query()->orderBy('judul')->get()),
                 'mongoError' => null,
             ]);
         } catch (Throwable $e) {
@@ -33,6 +35,7 @@ class StudentController extends Controller
                 'studentStats' => $this->studentStats(collect()),
                 'books' => collect(),
                 'loans' => collect(),
+                'topBooks' => collect(),
                 'mongoError' => $e->getMessage(),
             ]);
         }
@@ -46,15 +49,41 @@ class StudentController extends Controller
             return view('shelfy.student.books', [
                 'books' => $this->filterBooks($allBooks, $request),
                 'categories' => $this->categories($allBooks),
+                'cartBookIds' => $this->cartItems($request->user())->pluck('book_id')->all(),
                 'mongoError' => null,
             ]);
         } catch (Throwable $e) {
             return view('shelfy.student.books', [
                 'books' => collect(),
                 'categories' => $this->categories(collect()),
+                'cartBookIds' => [],
                 'mongoError' => $e->getMessage(),
             ]);
         }
+    }
+
+    public function bookDetail(Request $request, string $id): View
+    {
+        $book = Book::query()->findOrFail($id);
+
+        return view('shelfy.student.book-detail', [
+            'book' => $book,
+            'alreadyInCart' => $this->cartItems($request->user())->contains('book_id', $id),
+        ]);
+    }
+
+    public function cart(Request $request): View
+    {
+        $items = $this->cartItems($request->user());
+        $bookIds = $items->pluck('book_id')->all();
+
+        return view('shelfy.student.cart', [
+            'cartItems' => $items,
+            'books' => Book::query()
+                ->get()
+                ->filter(fn ($book) => in_array(Shelfy::id($book), $bookIds, true))
+                ->keyBy(fn ($book) => Shelfy::id($book)),
+        ]);
     }
 
     public function loans(Request $request): View
@@ -64,13 +93,11 @@ class StudentController extends Controller
 
             return view('shelfy.student.loans', [
                 'loans' => $loans,
-                'availableBooks' => $this->availableBooks(),
                 'mongoError' => null,
             ]);
         } catch (Throwable $e) {
             return view('shelfy.student.loans', [
                 'loans' => collect(),
-                'availableBooks' => collect(),
                 'mongoError' => $e->getMessage(),
             ]);
         }
@@ -95,7 +122,18 @@ class StudentController extends Controller
         }
     }
 
-    public function storeLoan(Request $request): RedirectResponse
+    public function loanDetail(Request $request, string $id): View
+    {
+        $loan = Loan::query()->findOrFail($id);
+
+        abort_unless(Shelfy::loanBelongsToUser($loan, $request->user()), 403, 'Peminjaman ini bukan milik akun kamu.');
+
+        return view('shelfy.student.loan-detail', [
+            'loan' => $loan,
+        ]);
+    }
+
+    public function addToCart(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'book_id' => ['required', 'string'],
@@ -110,39 +148,103 @@ class StudentController extends Controller
             return back()->with('danger', $e->getMessage());
         }
 
-        $book = Book::query()->findOrFail($validated['book_id']);
-
         if (($member->status ?? 'aktif') !== 'aktif') {
             return back()->with('danger', 'Anggota tidak aktif, tidak bisa membuat peminjaman.');
         }
+
+        $book = Book::query()->findOrFail($validated['book_id']);
 
         if ((int) ($book->stok_tersedia ?? 0) < 1) {
             return back()->with('danger', 'Stok buku sedang habis.');
         }
 
-        Loan::query()->create([
-            'book_id' => Shelfy::id($book),
+        $payload = [
+            'user_id' => Shelfy::id($request->user()),
             'member_id' => Shelfy::id($member),
+            'book_id' => Shelfy::id($book),
             'judul_buku' => $book->judul,
             'kategori_buku' => $book->kategori,
-            'nama_anggota' => $member->nama,
-            'nim_anggota' => $member->nim,
             'tanggal_pinjam' => $validated['tanggal_pinjam'],
             'tanggal_jatuh_tempo' => $validated['tanggal_jatuh_tempo'],
-            'tanggal_kembali' => null,
-            'status' => $validated['tanggal_jatuh_tempo'] < date('Y-m-d') ? 'terlambat' : 'dipinjam',
             'catatan' => $validated['catatan'] ?? '',
-            'dibuat_oleh' => Auth::user()?->displayName() ?? 'Mahasiswa',
-            'hari_terlambat' => 0,
-            'denda_per_hari' => Shelfy::FINE_PER_DAY,
-            'total_denda' => 0,
-            'payment_status' => null,
-        ]);
+        ];
 
-        $book->decrement('stok_tersedia');
-        $book->increment('dipinjam_count');
+        $existing = CartItem::query()
+            ->where('user_id', Shelfy::id($request->user()))
+            ->where('book_id', Shelfy::id($book))
+            ->first();
 
-        return redirect()->route('student.loans')->with('success', 'Pengajuan peminjaman berhasil dicatat.');
+        $existing ? $existing->update($payload) : CartItem::query()->create($payload);
+
+        return redirect()->route('student.cart')->with('success', 'Buku berhasil masuk keranjang.');
+    }
+
+    public function removeCart(Request $request, string $id): RedirectResponse
+    {
+        $item = CartItem::query()
+            ->where('_id', $id)
+            ->where('user_id', Shelfy::id($request->user()))
+            ->firstOrFail();
+
+        $item->delete();
+
+        return back()->with('success', 'Buku dihapus dari keranjang.');
+    }
+
+    public function checkout(Request $request): RedirectResponse
+    {
+        try {
+            $member = $this->memberForUser($request->user());
+        } catch (RuntimeException $e) {
+            return back()->with('danger', $e->getMessage());
+        }
+
+        if (($member->status ?? 'aktif') !== 'aktif') {
+            return back()->with('danger', 'Anggota tidak aktif, tidak bisa membuat peminjaman.');
+        }
+
+        $items = $this->cartItems($request->user());
+
+        if ($items->isEmpty()) {
+            return back()->with('danger', 'Keranjang masih kosong.');
+        }
+
+        foreach ($items as $item) {
+            $book = Book::query()->find($item->book_id);
+
+            if (! $book || (int) ($book->stok_tersedia ?? 0) < 1) {
+                return back()->with('danger', 'Ada buku yang stoknya sudah habis. Periksa keranjang lagi.');
+            }
+        }
+
+        foreach ($items as $item) {
+            $book = Book::query()->findOrFail($item->book_id);
+
+            Loan::query()->create([
+                'book_id' => Shelfy::id($book),
+                'member_id' => Shelfy::id($member),
+                'judul_buku' => $book->judul,
+                'kategori_buku' => $book->kategori,
+                'nama_anggota' => $member->nama,
+                'nim_anggota' => $member->nim,
+                'tanggal_pinjam' => $item->tanggal_pinjam,
+                'tanggal_jatuh_tempo' => $item->tanggal_jatuh_tempo,
+                'tanggal_kembali' => null,
+                'status' => 'menunggu_diambil',
+                'catatan' => $item->catatan ?? '',
+                'dibuat_oleh' => Auth::user()?->displayName() ?? 'Mahasiswa',
+                'hari_terlambat' => 0,
+                'denda_per_hari' => Shelfy::FINE_PER_DAY,
+                'total_denda' => 0,
+                'payment_status' => null,
+            ]);
+
+            $book->decrement('stok_tersedia');
+            $book->increment('dipinjam_count');
+            $item->delete();
+        }
+
+        return redirect()->route('student.loans')->with('success', 'Checkout berhasil. Tunjukkan halaman peminjaman ke pustakawan saat mengambil buku.');
     }
 
     private function studentLoans(?object $user): Collection
@@ -151,6 +253,14 @@ class StudentController extends Controller
             Loan::query()->orderBy('created_at', 'desc')->get(),
             $user
         );
+    }
+
+    private function cartItems(?object $user): Collection
+    {
+        return CartItem::query()
+            ->where('user_id', Shelfy::id($user))
+            ->orderBy('created_at', 'desc')
+            ->get();
     }
 
     private function availableBooks(): Collection
@@ -198,7 +308,7 @@ class StudentController extends Controller
     private function studentStats(Collection $loans): array
     {
         return [
-            'aktif' => $loans->whereIn('status', ['dipinjam', 'terlambat'])->count(),
+            'aktif' => $loans->whereIn('status', ['menunggu_diambil', 'dipinjam', 'terlambat'])->count(),
             'terlambat' => $loans->where('status', 'terlambat')->count(),
             'selesai' => $loans->where('status', 'dikembalikan')->count(),
         ];

@@ -34,16 +34,16 @@ class ReturnController extends Controller
                 ->get();
 
             return view('shelfy.returns.index', [
-                'returnLoans' => $user?->isAdmin() ? $activeLoans : collect(),
+                'returnLoans' => $user?->isLibrarian() ? $activeLoans : collect(),
                 'returnedLoans' => Shelfy::filterLoansForUser($returnedLoans, $user),
-                'isAdmin' => $user?->isAdmin(),
+                'canManageReturns' => $user?->isLibrarian(),
                 'mongoError' => null,
             ]);
         } catch (Throwable $e) {
             return view('shelfy.returns.index', [
                 'returnLoans' => collect(),
                 'returnedLoans' => collect(),
-                'isAdmin' => false,
+                'canManageReturns' => false,
                 'mongoError' => $e->getMessage(),
             ]);
         }
@@ -51,7 +51,7 @@ class ReturnController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        abort_unless($request->user()?->isAdmin(), 403, 'Halaman ini khusus bagian admin.');
+        abort_unless($request->user()?->isLibrarian(), 403, 'Pengembalian hanya bisa diproses pustakawan.');
 
         $validated = $request->validate([
             'id' => ['required', 'string'],
@@ -63,6 +63,10 @@ class ReturnController extends Controller
 
         if ($loan->isReturned()) {
             return back()->with('danger', 'Peminjaman ini sudah dikembalikan.');
+        }
+
+        if ($loan->isWaitingPickup()) {
+            return back()->with('danger', 'Buku belum dikonfirmasi diambil oleh pustakawan.');
         }
 
         $fine = Shelfy::lateFee($loan->tanggal_jatuh_tempo, $validated['tanggal_kembali']);

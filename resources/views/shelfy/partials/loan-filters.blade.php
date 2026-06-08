@@ -2,6 +2,7 @@
     <input name="q" value="{{ request('q') }}" placeholder="Cari buku atau anggota...">
     <select name="status">
         <option value="">Semua Status</option>
+        <option value="menunggu_diambil" @selected(request('status') === 'menunggu_diambil')>Menunggu Diambil</option>
         <option value="dipinjam" @selected(request('status') === 'dipinjam')>Dipinjam</option>
         <option value="terlambat" @selected(request('status') === 'terlambat')>Terlambat</option>
         <option value="dikembalikan" @selected(request('status') === 'dikembalikan')>Dikembalikan</option>

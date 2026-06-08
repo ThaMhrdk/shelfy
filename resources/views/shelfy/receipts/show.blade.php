@@ -11,8 +11,8 @@
     $paymentStatus = Shelfy::paymentStatus($loan, $fine);
     $paymentMethod = Shelfy::paymentMethodLabel($loan->payment_method ?? null);
     $currentUser = auth()->user();
-    $canStudentPay = $currentUser && ! $currentUser->isAdmin() && $hasFine && $paymentStatus === 'belum_bayar';
-    $canAdminConfirm = $currentUser?->isAdmin() && $hasFine && $paymentStatus === 'menunggu_konfirmasi';
+    $canStudentPay = $currentUser?->isStudent() && $hasFine && $paymentStatus === 'belum_bayar';
+    $canStaffConfirm = $currentUser?->isLibrarian() && $hasFine && $paymentStatus === 'menunggu_konfirmasi';
 @endphp
 
 <x-app-layout>
@@ -61,7 +61,7 @@
                 @if ($hasFine && $paymentStatus === 'belum_bayar')
                     Denda {{ Shelfy::rupiah($fine['total_denda']) }} belum dibayar.
                 @elseif ($hasFine && $paymentStatus === 'menunggu_konfirmasi')
-                    Pembayaran via {{ $paymentMethod }} sudah dicatat dan menunggu konfirmasi admin.
+                    Pembayaran via {{ $paymentMethod }} sudah dicatat dan menunggu konfirmasi pustakawan.
                 @elseif ($hasFine)
                     Denda {{ Shelfy::rupiah($fine['total_denda']) }} sudah lunas via {{ $paymentMethod }}.
                 @else
@@ -90,8 +90,8 @@
                         </div>
                         <button class="button primary full" type="submit">Bayar Denda</button>
                     </form>
-                @elseif ($canAdminConfirm)
-                    <p>Mahasiswa sudah memilih {{ $paymentMethod }}. Admin tinggal mengonfirmasi pembayaran ini sebagai lunas.</p>
+                @elseif ($canStaffConfirm)
+                    <p>Mahasiswa sudah memilih {{ $paymentMethod }}. Petugas tinggal mengonfirmasi pembayaran ini sebagai lunas.</p>
                     <form method="post" action="{{ route('returns.receipt.confirm', Shelfy::id($loan)) }}">
                         @csrf
                         <button class="button primary" type="submit">Konfirmasi Lunas</button>

@@ -34,7 +34,7 @@ class ReceiptController extends Controller
 
     public function pay(Request $request, string $id): RedirectResponse
     {
-        abort_unless(! $request->user()?->isAdmin(), 403, 'Pembayaran denda khusus bagian mahasiswa.');
+        abort_unless($request->user()?->isStudent(), 403, 'Pembayaran denda khusus bagian mahasiswa.');
 
         $validated = $request->validate([
             'payment_method' => ['required', 'string', 'in:' . implode(',', array_keys(Shelfy::paymentMethodOptions()))],
@@ -68,12 +68,12 @@ class ReceiptController extends Controller
 
         return redirect()
             ->route('returns.receipt', Shelfy::id($loan))
-            ->with('success', 'Pembayaran via ' . Shelfy::paymentMethodLabel($validated['payment_method']) . ' sudah dicatat. Tunggu konfirmasi admin.');
+            ->with('success', 'Pembayaran via ' . Shelfy::paymentMethodLabel($validated['payment_method']) . ' sudah dicatat. Tunggu konfirmasi pustakawan.');
     }
 
     public function confirm(Request $request, string $id): RedirectResponse
     {
-        abort_unless($request->user()?->isAdmin(), 403, 'Konfirmasi pembayaran khusus bagian admin.');
+        abort_unless($request->user()?->isLibrarian(), 403, 'Konfirmasi pembayaran khusus admin atau pustakawan.');
 
         $loan = $this->returnedLoanOrFail($id);
         $fine = $this->fine($loan);

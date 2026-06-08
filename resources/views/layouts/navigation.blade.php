@@ -3,18 +3,19 @@
 
     $user = Auth::user();
     $isAdmin = $user?->isAdmin();
-    $navTitle = $isAdmin ? 'Bagian Admin' : 'Bagian Mahasiswa';
-    $navItems = $isAdmin ? [
+    $isStaff = $user?->isStaff();
+    $navTitle = $isStaff ? Shelfy::statusLabel($user?->role) : 'Bagian Mahasiswa';
+    $navItems = $isStaff ? [
         ['label' => 'Dashboard', 'route' => 'dashboard', 'active' => request()->routeIs('dashboard')],
         ['label' => 'Buku', 'route' => 'books.index', 'active' => request()->routeIs('books.*')],
         ['label' => 'Anggota', 'route' => 'members.index', 'active' => request()->routeIs('members.*')],
         ['label' => 'Peminjaman', 'route' => 'loans.index', 'active' => request()->routeIs('loans.*')],
         ['label' => 'Pengembalian', 'route' => 'returns.index', 'active' => request()->routeIs('returns.*')],
-        ['label' => 'Rekap', 'route' => 'recap.index', 'active' => request()->routeIs('recap.*')],
         ['label' => 'Profil', 'route' => 'profile.edit', 'active' => request()->routeIs('profile.*')],
     ] : [
         ['label' => 'Beranda', 'route' => 'student.dashboard', 'active' => request()->routeIs('student.dashboard')],
         ['label' => 'Katalog Buku', 'route' => 'student.books', 'active' => request()->routeIs('student.books')],
+        ['label' => 'Keranjang', 'route' => 'student.cart', 'active' => request()->routeIs('student.cart')],
         ['label' => 'Peminjaman Saya', 'route' => 'student.loans', 'active' => request()->routeIs('student.loans')],
         ['label' => 'Riwayat & Nota', 'route' => 'student.history', 'active' => request()->routeIs('student.history')],
         ['label' => 'Profil', 'route' => 'profile.edit', 'active' => request()->routeIs('profile.*')],

@@ -28,10 +28,12 @@ class DashboardController extends Controller
                 'books' => $books->take(6),
                 'loans' => $loans->take(5),
                 'categories' => $this->categories($allBooks),
-                'topBooks' => $user?->isAdmin() ? Shelfy::topBorrowed($allBooks) : collect(),
-                'categoryLoans' => $user?->isAdmin() ? $this->categoryLoans($allLoans) : collect(),
-                'editBook' => null,
-                'isAdmin' => $user?->isAdmin(),
+                'topBooks' => $user?->isStaff() ? Shelfy::topBorrowed($allBooks) : collect(),
+                'categoryLoans' => $user?->isStaff() ? $this->categoryLoans($allLoans) : collect(),
+                'categoryStats' => $user?->isStaff() ? $this->categoryStats($allBooks, $allLoans) : collect(),
+                'borrowedLoans' => $allLoans->whereIn('status', ['menunggu_diambil', 'dipinjam'])->values(),
+                'overdueLoans' => $allLoans->where('status', 'terlambat')->values(),
+                'isAdmin' => $user?->isStaff(),
                 'mongoError' => null,
             ]);
         } catch (Throwable $e) {
@@ -42,7 +44,9 @@ class DashboardController extends Controller
                 'categories' => $this->categories(collect()),
                 'topBooks' => collect(),
                 'categoryLoans' => collect(),
-                'editBook' => null,
+                'categoryStats' => collect(),
+                'borrowedLoans' => collect(),
+                'overdueLoans' => collect(),
                 'isAdmin' => false,
                 'mongoError' => $e->getMessage(),
             ]);
@@ -76,7 +80,7 @@ class DashboardController extends Controller
             'stok_tersedia' => $books->sum(fn ($book) => (int) ($book->stok_tersedia ?? 0)),
             'avg_stok' => $books->count() > 0 ? $books->avg(fn ($book) => (int) ($book->stok_total ?? 0)) : 0,
             'gt_five' => $books->filter(fn ($book) => (int) ($book->stok_total ?? 0) > 5)->count(),
-            'dipinjam' => $loans->whereIn('status', ['dipinjam', 'terlambat'])->count(),
+            'dipinjam' => $loans->whereIn('status', ['menunggu_diambil', 'dipinjam', 'terlambat'])->count(),
             'terlambat' => $loans->where('status', 'terlambat')->count(),
         ];
     }
@@ -100,6 +104,25 @@ class DashboardController extends Controller
             ->map(fn ($rows, $category) => (object) ['kategori' => $category, 'total' => $rows->count()])
             ->sortByDesc('total')
             ->take(5)
+            ->values();
+    }
+
+    private function categoryStats(Collection $books, Collection $loans): Collection
+    {
+        return $books
+            ->groupBy(fn ($book) => $book->kategori ?: 'Tanpa Kategori')
+            ->map(function ($rows, $category) use ($loans) {
+                $categoryLoans = $loans->where('kategori_buku', $category);
+
+                return (object) [
+                    'kategori' => $category,
+                    'judul' => $rows->count(),
+                    'tersedia' => $rows->sum(fn ($book) => (int) ($book->stok_tersedia ?? 0)),
+                    'dipinjam' => $categoryLoans->whereIn('status', ['menunggu_diambil', 'dipinjam'])->count(),
+                    'terlambat' => $categoryLoans->where('status', 'terlambat')->count(),
+                ];
+            })
+            ->sortBy('kategori')
             ->values();
     }
 }

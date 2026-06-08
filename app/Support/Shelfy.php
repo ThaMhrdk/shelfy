@@ -31,9 +31,12 @@ class Shelfy
             'aktif' => 'Aktif',
             'nonaktif' => 'Nonaktif',
             'dipinjam' => 'Dipinjam',
+            'menunggu_diambil' => 'Menunggu Diambil',
             'dikembalikan' => 'Dikembalikan',
             'terlambat' => 'Terlambat',
             'admin' => 'Admin',
+            'pustakawan' => 'Pustakawan',
+            'kepala_pustakawan' => 'Admin',
             'mahasiswa' => 'Mahasiswa',
             'belum_bayar' => 'Belum Bayar',
             'menunggu_konfirmasi' => 'Menunggu Konfirmasi',
@@ -46,7 +49,7 @@ class Shelfy
     {
         return match ((string) $status) {
             'tersedia', 'aktif', 'dikembalikan', 'lunas' => 'success',
-            'dipinjam', 'menunggu_konfirmasi' => 'warning',
+            'dipinjam', 'menunggu_diambil', 'menunggu_konfirmasi' => 'warning',
             'terlambat', 'habis', 'nonaktif', 'belum_bayar' => 'danger',
             default => 'neutral',
         };
@@ -177,7 +180,7 @@ class Shelfy
 
     public static function loanBelongsToUser(object $loan, ?object $user): bool
     {
-        if ($user?->isAdmin()) {
+        if ($user?->isStaff()) {
             return true;
         }
 
@@ -190,7 +193,7 @@ class Shelfy
 
     public static function filterLoansForUser(Collection $loans, ?object $user): Collection
     {
-        if ($user?->isAdmin()) {
+        if ($user?->isStaff()) {
             return $loans->values();
         }
 
@@ -201,6 +204,6 @@ class Shelfy
 
     public static function homeRouteName(?object $user): string
     {
-        return $user?->isAdmin() ? 'dashboard' : 'student.dashboard';
+        return $user?->isStaff() ? 'dashboard' : 'student.dashboard';
     }
 }

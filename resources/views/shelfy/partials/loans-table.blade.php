@@ -49,7 +49,13 @@
                     @endif
                 </td>
                 <td class="actions">
-                    @if (! $loan->isReturned())
+                    @if (($canManageLoans ?? false) && $loan->isWaitingPickup())
+                        <form class="pickup-form" method="post" action="{{ route('loans.pickup', $id) }}">
+                            @csrf
+                            <input name="bukti_pengambilan" placeholder="Bukti diambil">
+                            <button class="button tiny primary" type="submit">Buku Diambil</button>
+                        </form>
+                    @elseif (($canManageLoans ?? false) && ! $loan->isReturned())
                         <form method="post" action="{{ route('returns.store') }}">
                             @csrf
                             <input type="hidden" name="from" value="loans">
@@ -58,7 +64,11 @@
                             <button class="button tiny" type="submit">Kembalikan</button>
                         </form>
                     @else
-                        <a class="button tiny" href="{{ route('returns.receipt', $id) }}">Nota</a>
+                        @if ($loan->isReturned())
+                            <a class="button tiny" href="{{ route('returns.receipt', $id) }}">Nota</a>
+                        @else
+                            <span class="muted">Pantau</span>
+                        @endif
                     @endif
                 </td>
             </tr>

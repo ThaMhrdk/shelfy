@@ -1,11 +1,13 @@
 @php
     $book = $editBook ?? null;
+    $dialogId = $book ? 'book-edit-' . App\Support\Shelfy::id($book) : 'book-create-dialog';
 @endphp
 
 <h2>{{ $book ? 'Edit Buku' : 'Tambah Buku' }}</h2>
-<form class="stack-form" method="post" action="{{ route('books.store') }}">
+<form class="stack-form" method="post" action="{{ route('books.store') }}" enctype="multipart/form-data">
     @csrf
     <input type="hidden" name="id" value="{{ $book ? App\Support\Shelfy::id($book) : '' }}">
+    <input type="hidden" name="dialog" value="{{ $dialogId }}">
 
     <label>Judul Buku
         <input name="judul" value="{{ old('judul', $book?->judul) }}" required>
@@ -37,13 +39,18 @@
     <label>ISBN
         <input name="isbn" value="{{ old('isbn', $book?->isbn) }}">
     </label>
+    <label>Cover Buku
+        <input type="file" name="cover" accept="image/*">
+        @if ($book?->cover_path)
+            <small>Cover saat ini sudah tersimpan.</small>
+        @endif
+        @error('cover') <span class="form-error">{{ $message }}</span> @enderror
+    </label>
     <label>Deskripsi
         <textarea name="deskripsi" rows="4">{{ old('deskripsi', $book?->deskripsi) }}</textarea>
     </label>
     <div class="form-actions">
-        @if ($book)
-            <a class="button" href="{{ route('books.index') }}">Batal</a>
-        @endif
+        <button class="button" type="button" onclick="this.closest('dialog')?.close()">Batal</button>
         <button class="button primary" type="submit">Simpan</button>
     </div>
 </form>

@@ -19,6 +19,7 @@ class Book extends Model
         'stok_tersedia',
         'dipinjam_count',
         'deskripsi',
+        'cover_path',
     ];
 
     protected function casts(): array

@@ -1,18 +1,19 @@
 <x-app-layout>
     <section class="page-heading">
         <div>
-            <h1>Data Anggota</h1>
-            <p>CRUD anggota perpustakaan dan filter status.</p>
+            <h1>Direktori Anggota</h1>
+            <p>Data anggota berasal dari register dan profil mahasiswa. Petugas hanya memantau status layanan.</p>
         </div>
     </section>
 
-    <section class="content-grid">
-        <div class="panel wide">
-            @include('shelfy.partials.member-filters')
-            @include('shelfy.partials.members-table')
+    <section class="panel">
+        <div class="panel-header">
+            <div>
+                <h2>Anggota Terdaftar</h2>
+                <p>Kontak pribadi seperti alamat dan nomor HP dikelola sendiri oleh mahasiswa di Profil.</p>
+            </div>
         </div>
-        <aside class="panel sticky-form" id="member-form">
-            @include('shelfy.partials.member-form')
-        </aside>
+        @include('shelfy.partials.member-filters')
+        @include('shelfy.partials.members-table')
     </section>
 </x-app-layout>

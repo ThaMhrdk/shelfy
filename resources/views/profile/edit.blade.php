@@ -14,7 +14,7 @@
             <h2>{{ $user->displayName() }}</h2>
             <p>{{ $user->email }}</p>
             <span class="badge {{ Shelfy::statusClass($user->role ?? 'mahasiswa') }}">{{ Shelfy::statusLabel($user->role ?? 'mahasiswa') }}</span>
-            @if (! $user->isAdmin())
+            @if ($user->isStudent())
                 <dl class="meta-list">
                     <div><dt>NIM</dt><dd>{{ $user->nim ?: '-' }}</dd></div>
                     <div><dt>Data anggota</dt><dd>{{ $member ? 'Terhubung' : 'Belum terhubung' }}</dd></div>
@@ -36,7 +36,7 @@
                     <input type="email" name="email" value="{{ old('email', $user->email) }}" required>
                     @error('email') <span class="form-error">{{ $message }}</span> @enderror
                 </label>
-                @if (! $user->isAdmin())
+                @if ($user->isStudent())
                     <label>NIM
                         <input value="{{ $user->nim ?: '-' }}" disabled>
                     </label>

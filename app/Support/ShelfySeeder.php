@@ -11,20 +11,36 @@ class ShelfySeeder
 {
     public static function ensureAdmin(): void
     {
-        $admin = User::query()->where('email', User::DEFAULT_ADMIN_EMAIL)->first();
+        $users = [
+            [
+                'name' => 'Admin SHELFY',
+                'email' => User::DEFAULT_ADMIN_EMAIL,
+                'password' => User::DEFAULT_ADMIN_PASSWORD,
+                'role' => 'admin',
+            ],
+            [
+                'name' => 'Pustakawan SHELFY',
+                'email' => 'pustakawan@shelfy.test',
+                'password' => 'pustaka123',
+                'role' => 'pustakawan',
+            ],
+            [
+                'name' => 'Admin Kepala SHELFY',
+                'email' => 'kepala@shelfy.test',
+                'password' => 'kepala123',
+                'role' => 'admin',
+            ],
+        ];
 
-        if ($admin) {
-            return;
+        foreach ($users as $row) {
+            User::query()->updateOrCreate(['email' => $row['email']], [
+                'name' => $row['name'],
+                'nama' => $row['name'],
+                'password' => $row['password'],
+                'role' => $row['role'],
+                'status' => 'aktif',
+            ]);
         }
-
-        User::query()->create([
-            'name' => 'Admin SHELFY',
-            'nama' => 'Admin SHELFY',
-            'email' => User::DEFAULT_ADMIN_EMAIL,
-            'password' => User::DEFAULT_ADMIN_PASSWORD,
-            'role' => 'admin',
-            'status' => 'aktif',
-        ]);
     }
 
     public static function seedDemo(): string
@@ -58,6 +74,7 @@ class ShelfySeeder
                 'stok_tersedia' => $stock,
                 'dipinjam_count' => 0,
                 'deskripsi' => 'Data contoh migrasi SHELFY dari native ke Laravel Breeze.',
+                'cover_path' => null,
             ]);
         }
 

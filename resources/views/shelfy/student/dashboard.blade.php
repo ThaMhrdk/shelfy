@@ -58,4 +58,34 @@
             </div>
         </aside>
     </section>
+
+    <section class="panel">
+        <div class="panel-header">
+            <div>
+                <h2>Buku Populer dan Terlaris</h2>
+                <p>Berdasarkan jumlah buku yang paling sering dipinjam.</p>
+            </div>
+            <a class="button small" href="{{ route('student.books') }}">Lihat Katalog</a>
+        </div>
+        <div class="popular-grid">
+            @foreach ($topBooks as $book)
+                <a class="popular-book" href="{{ route('student.books.show', Shelfy::id($book)) }}">
+                    <div class="book-cover medium">
+                        @if ($book->cover_path)
+                            <img src="{{ asset($book->cover_path) }}" alt="Cover {{ $book->judul }}">
+                        @else
+                            <span>{{ strtoupper(substr($book->judul, 0, 1)) }}</span>
+                        @endif
+                    </div>
+                    <span>
+                        <strong>{{ $book->judul }}</strong>
+                        <small>{{ $book->kategori }} | {{ Shelfy::moneyless($book->dipinjam_count ?? 0) }} kali dipinjam</small>
+                    </span>
+                </a>
+            @endforeach
+            @if ($topBooks->isEmpty())
+                <p class="muted">Belum ada data buku populer.</p>
+            @endif
+        </div>
+    </section>
 </x-app-layout>

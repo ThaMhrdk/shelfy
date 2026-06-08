@@ -29,14 +29,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('/books', [BookController::class, 'index'])->name('books.index');
         Route::post('/books', [BookController::class, 'store'])->name('books.store');
+        Route::get('/books/{id}', [BookController::class, 'show'])->name('books.show');
         Route::delete('/books/{id}', [BookController::class, 'destroy'])->name('books.destroy');
 
         Route::get('/members', [MemberController::class, 'index'])->name('members.index');
-        Route::post('/members', [MemberController::class, 'store'])->name('members.store');
-        Route::delete('/members/{id}', [MemberController::class, 'destroy'])->name('members.destroy');
 
         Route::get('/loans', [LoanController::class, 'index'])->name('loans.index');
-        Route::post('/loans', [LoanController::class, 'store'])->name('loans.store');
+        Route::post('/loans/{id}/pickup', [LoanController::class, 'pickup'])->name('loans.pickup');
 
         Route::get('/returns', [ReturnController::class, 'index'])->name('returns.index');
         Route::post('/returns', [ReturnController::class, 'store'])->name('returns.store');
@@ -47,8 +46,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('student')->prefix('student')->name('student.')->group(function () {
         Route::get('/dashboard', [StudentController::class, 'dashboard'])->name('dashboard');
         Route::get('/books', [StudentController::class, 'books'])->name('books');
+        Route::get('/books/{id}', [StudentController::class, 'bookDetail'])->name('books.show');
+        Route::get('/cart', [StudentController::class, 'cart'])->name('cart');
+        Route::post('/cart', [StudentController::class, 'addToCart'])->name('cart.add');
+        Route::delete('/cart/{id}', [StudentController::class, 'removeCart'])->name('cart.remove');
+        Route::post('/checkout', [StudentController::class, 'checkout'])->name('checkout');
         Route::get('/loans', [StudentController::class, 'loans'])->name('loans');
-        Route::post('/loans', [StudentController::class, 'storeLoan'])->name('loans.store');
+        Route::get('/loans/{id}', [StudentController::class, 'loanDetail'])->name('loans.show');
         Route::get('/history', [StudentController::class, 'history'])->name('history');
     });
 });

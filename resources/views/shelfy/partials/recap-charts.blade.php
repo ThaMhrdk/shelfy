@@ -1,6 +1,10 @@
 @php use App\Support\Shelfy; @endphp
 
-<section class="chart-grid">
+<section class="chart-grid" id="rekap-dashboard">
+    <div class="chart-heading">
+        <h2>Rekapitulasi Data</h2>
+        <p>Ringkasan agregasi MongoDB: buku paling sering dipinjam dan jumlah peminjaman per kategori.</p>
+    </div>
     <article class="panel">
         <h2>5 Buku Paling Sering Dipinjam</h2>
         <div class="bar-list">
