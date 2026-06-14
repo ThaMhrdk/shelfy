@@ -55,9 +55,4 @@
             </a>
         @endforeach
     </nav>
-
-    <div class="sidebar-note">
-        <strong>NoSQL</strong>
-        <span>MongoDB database {{ $shelfyMongo['database'] ?? 'shelfy_db' }}</span>
-    </div>
 </aside>

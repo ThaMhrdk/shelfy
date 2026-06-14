@@ -21,6 +21,7 @@ test('admin can open shelfy admin pages and nota route exists', function () {
     expect($routeNames->contains('books.edit'))->toBeFalse();
 
     expect($routeNames->contains('returns.receipt'))->toBeTrue();
+    expect($routeNames->contains('returns.extend'))->toBeTrue();
 });
 
 test('pustakawan can add and update book stock from catalog modal flow', function () {
@@ -67,7 +68,7 @@ test('pustakawan can add and update book stock from catalog modal flow', functio
         'stok_total' => 5,
         'isbn' => '9780000000999',
         'deskripsi' => 'Stok ditambah pustakawan.',
-        'dialog' => 'book-edit-' . Shelfy::id($book),
+        'dialog' => 'book-edit-'.Shelfy::id($book),
     ])->assertRedirect(route('books.index'))->assertSessionHas('success');
 
     expect($book->refresh()->stok_total)->toBe(5);
@@ -76,6 +77,9 @@ test('pustakawan can add and update book stock from catalog modal flow', functio
 
 test('book member loan return and nota flow works', function () {
     $user = User::factory()->create();
+    $loanDate = date('Y-m-d');
+    $dueDate = date('Y-m-d', strtotime('+7 days'));
+    $returnDate = date('Y-m-d');
 
     $this->actingAs($user)->post('/books', [
         'judul' => 'Tes MongoDB Compass',
@@ -112,8 +116,8 @@ test('book member loan return and nota flow works', function () {
 
     $this->actingAs($student)->post(route('student.cart.add'), [
         'book_id' => Shelfy::id($book),
-        'tanggal_pinjam' => '2026-06-01',
-        'tanggal_jatuh_tempo' => '2026-06-08',
+        'tanggal_pinjam' => $loanDate,
+        'tanggal_jatuh_tempo' => $dueDate,
         'catatan' => 'Test flow',
     ])->assertRedirect(route('student.cart'));
 
@@ -127,7 +131,7 @@ test('book member loan return and nota flow works', function () {
 
     $this->actingAs($user)->post('/returns', [
         'id' => Shelfy::id($loan),
-        'tanggal_kembali' => '2026-06-02',
+        'tanggal_kembali' => $returnDate,
         'from' => 'returns',
     ])->assertRedirect()->assertSessionHas('danger', 'Buku belum dikonfirmasi diambil oleh pustakawan.');
 
@@ -138,9 +142,16 @@ test('book member loan return and nota flow works', function () {
     expect($loan->refresh()->status)->toBe('dipinjam');
     expect($loan->bukti_pengambilan)->toBe('Kartu anggota fisik');
 
+    $this->actingAs($user)->post('/returns', [
+        'id' => Shelfy::id($loan),
+        'from' => 'returns',
+    ])->assertSessionHasErrors('tanggal_kembali');
+
+    expect($loan->refresh()->status)->toBe('dipinjam');
+
     $response = $this->actingAs($user)->post('/returns', [
         'id' => Shelfy::id($loan),
-        'tanggal_kembali' => '2026-06-02',
+        'tanggal_kembali' => $returnDate,
         'from' => 'returns',
     ]);
 
@@ -157,6 +168,60 @@ test('book member loan return and nota flow works', function () {
         ->assertOk()
         ->assertSee('Nota Pengembalian')
         ->assertSee('Cetak / Simpan PDF');
+});
+
+test('pustakawan can extend active loan with manual due date', function () {
+    $pustakawan = User::factory()->create(['role' => 'pustakawan']);
+    $oldDueDate = date('Y-m-d', strtotime('+2 days'));
+    $newDueDate = date('Y-m-d', strtotime('+9 days'));
+    $book = Book::query()->create([
+        'judul' => 'Perpanjangan Real Case',
+        'penulis' => 'SHELFY',
+        'kategori' => 'Referensi',
+        'stok_total' => 1,
+        'stok_tersedia' => 0,
+        'dipinjam_count' => 1,
+    ]);
+    $member = Member::query()->create([
+        'nama' => 'Dina Perpanjang',
+        'nim' => '24104881',
+        'email' => 'dina@example.com',
+        'status' => 'aktif',
+    ]);
+    $loan = Loan::query()->create([
+        'book_id' => Shelfy::id($book),
+        'member_id' => Shelfy::id($member),
+        'judul_buku' => $book->judul,
+        'kategori_buku' => $book->kategori,
+        'nama_anggota' => $member->nama,
+        'nim_anggota' => $member->nim,
+        'tanggal_pinjam' => '2026-06-01',
+        'tanggal_jatuh_tempo' => $oldDueDate,
+        'status' => 'dipinjam',
+    ]);
+
+    $this->actingAs($pustakawan)
+        ->get(route('returns.index'))
+        ->assertOk()
+        ->assertSee('Perpanjang');
+
+    $extendResponse = $this->actingAs($pustakawan)
+        ->post(route('returns.extend', Shelfy::id($loan)), [
+            'tanggal_jatuh_tempo_baru' => $newDueDate,
+            'catatan_perpanjangan' => 'Mahasiswa butuh tambahan waktu.',
+            'dialog' => 'extend-'.Shelfy::id($loan),
+        ]);
+
+    $extendResponse
+        ->assertRedirect()
+        ->assertSessionHas('success');
+
+    $loan->refresh();
+    expect($loan->tanggal_jatuh_tempo)->toBe($newDueDate);
+    expect($loan->status)->toBe('dipinjam');
+    expect($loan->catatan_perpanjangan)->toBe('Mahasiswa butuh tambahan waktu.');
+    expect($loan->riwayat_perpanjangan[0]['tanggal_lama'])->toBe($oldDueDate);
+    expect($book->refresh()->stok_tersedia)->toBe(0);
 });
 
 test('student can pay fine and admin can confirm it from nota', function () {
@@ -345,6 +410,8 @@ test('student can add books to cart checkout and open loan detail', function () 
 });
 
 test('admin and pustakawan can process pickup', function () {
+    $loanDate = date('Y-m-d');
+    $dueDate = date('Y-m-d', strtotime('+7 days'));
     $book = Book::query()->create([
         'judul' => 'Role Pustakawan',
         'penulis' => 'SHELFY',
@@ -366,8 +433,8 @@ test('admin and pustakawan can process pickup', function () {
         'kategori_buku' => $book->kategori,
         'nama_anggota' => $member->nama,
         'nim_anggota' => $member->nim,
-        'tanggal_pinjam' => '2026-06-03',
-        'tanggal_jatuh_tempo' => '2026-06-10',
+        'tanggal_pinjam' => $loanDate,
+        'tanggal_jatuh_tempo' => $dueDate,
         'status' => 'menunggu_diambil',
     ]);
     $secondLoan = Loan::query()->create([
@@ -377,8 +444,8 @@ test('admin and pustakawan can process pickup', function () {
         'kategori_buku' => $book->kategori,
         'nama_anggota' => $member->nama,
         'nim_anggota' => $member->nim,
-        'tanggal_pinjam' => '2026-06-03',
-        'tanggal_jatuh_tempo' => '2026-06-10',
+        'tanggal_pinjam' => $loanDate,
+        'tanggal_jatuh_tempo' => $dueDate,
         'status' => 'menunggu_diambil',
     ]);
     $pustakawan = User::factory()->create(['role' => 'pustakawan']);

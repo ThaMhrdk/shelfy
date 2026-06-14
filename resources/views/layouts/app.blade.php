@@ -27,9 +27,6 @@
                         </button>
                     </form>
                     <div class="topbar-actions">
-                        <div class="topbar-status {{ ($shelfyMongo['connected'] ?? false) ? 'online' : 'offline' }}">
-                            <span></span>{{ ($shelfyMongo['connected'] ?? false) ? 'MongoDB aktif' : 'MongoDB belum aktif' }}
-                        </div>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button class="button small" type="submit">Logout</button>

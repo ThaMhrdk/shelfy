@@ -25,7 +25,12 @@
             <tr>
                 <td><strong>{{ $loan->judul_buku }}</strong><small>{{ $loan->kategori_buku }}</small></td>
                 <td>{{ $loan->tanggal_pinjam }}</td>
-                <td>{{ $loan->tanggal_jatuh_tempo }}</td>
+                <td>
+                    {{ $loan->tanggal_jatuh_tempo }}
+                    @if (! empty($loan->riwayat_perpanjangan))
+                        <small>Diperpanjang {{ Shelfy::moneyless(count($loan->riwayat_perpanjangan)) }} kali</small>
+                    @endif
+                </td>
                 <td>{{ $loan->tanggal_kembali ?: '-' }}</td>
                 <td><span class="badge {{ Shelfy::statusClass($loan->status) }}">{{ Shelfy::statusLabel($loan->status) }}</span></td>
                 <td>

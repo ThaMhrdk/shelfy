@@ -39,6 +39,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('/returns', [ReturnController::class, 'index'])->name('returns.index');
         Route::post('/returns', [ReturnController::class, 'store'])->name('returns.store');
+        Route::post('/returns/{id}/extend', [ReturnController::class, 'extend'])->name('returns.extend');
 
         Route::get('/recap', [RecapController::class, 'index'])->name('recap.index');
     });

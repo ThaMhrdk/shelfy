@@ -205,21 +205,6 @@ textarea:focus {
     box-shadow: 0 6px 14px rgba(0, 127, 120, .16);
 }
 
-.sidebar-note {
-    margin-top: auto;
-    padding: 14px;
-    border: 1px solid rgba(0, 127, 120, .18);
-    border-radius: var(--radius);
-    background: rgba(0, 127, 120, .06);
-    color: var(--teal-strong);
-    font-size: 13px;
-}
-
-.sidebar-note strong,
-.sidebar-note span {
-    display: block;
-}
-
 .main {
     min-width: 0;
     padding: 22px 28px 36px;
@@ -260,32 +245,6 @@ textarea:focus {
     display: flex;
     align-items: center;
     gap: 10px;
-}
-
-.topbar-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    min-height: 36px;
-    padding: 0 12px;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    background: var(--surface);
-    color: var(--muted);
-    font-size: 13px;
-    font-weight: 800;
-    white-space: nowrap;
-}
-
-.topbar-status span {
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    background: var(--red);
-}
-
-.topbar-status.online span {
-    background: var(--green);
 }
 
 .page-heading {
@@ -535,16 +494,16 @@ textarea:focus {
 
 .catalog-grid {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 14px;
 }
 
 .catalog-card {
     display: grid;
     grid-template-rows: auto 1fr auto;
-    gap: 12px;
+    gap: 10px;
     min-height: 100%;
-    padding: 12px;
+    padding: 10px;
     border: 1px solid var(--line);
     border-radius: var(--radius);
     background: #fff;
@@ -552,14 +511,14 @@ textarea:focus {
 
 .catalog-cover {
     display: grid;
-    aspect-ratio: 3 / 4;
+    aspect-ratio: 4 / 5;
     place-items: center;
     overflow: hidden;
     border: 1px solid var(--line);
     border-radius: var(--radius);
     background: linear-gradient(135deg, rgba(0, 127, 120, .14), rgba(18, 184, 134, .08));
     color: var(--teal-strong);
-    font-size: 44px;
+    font-size: 38px;
     font-weight: 900;
 }
 
@@ -583,7 +542,7 @@ textarea:focus {
 
 .catalog-info h2 {
     margin: 0;
-    font-size: 16px;
+    font-size: 15px;
     line-height: 1.3;
     font-weight: 900;
 }
@@ -607,10 +566,21 @@ textarea:focus {
 }
 
 .catalog-actions {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(54px, .7fr) minmax(0, 1.3fr);
     align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
+}
+
+.catalog-actions .button {
+    width: 100%;
+    padding-inline: 7px;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.catalog-actions > .muted {
+    grid-column: 1 / -1;
 }
 
 .catalog-empty {
@@ -926,11 +896,72 @@ tr:last-child td {
     padding: 28px;
 }
 
-.return-form {
+.return-date-form {
+    min-width: 160px;
+}
+
+.return-date-form input {
+    min-width: 160px;
+}
+
+.extension-dialog {
+    width: min(620px, calc(100vw - 32px));
+    text-align: left;
+    white-space: normal;
+}
+
+.extension-dialog .stack-form {
     display: grid;
-    grid-template-columns: minmax(150px, 1fr) auto;
-    gap: 8px;
+    width: 100%;
+    margin: 0;
+    white-space: normal;
+}
+
+.extension-dialog h2 {
+    padding-right: 42px;
+}
+
+.extension-current {
+    display: flex;
     align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface-soft);
+}
+
+.extension-current span {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.extension-history {
+    display: grid;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+}
+
+.extension-history h3 {
+    font-size: 16px;
+    font-weight: 900;
+}
+
+.extension-history > div {
+    display: grid;
+    gap: 4px;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface-soft);
+}
+
+.extension-history span,
+.extension-history small {
+    color: var(--muted);
 }
 
 .pickup-form {
@@ -1392,7 +1423,6 @@ tr:last-child td {
     }
 
     .bar-row,
-    .return-form,
     .pickup-form,
     .category-table div {
         grid-template-columns: 1fr;
@@ -1400,6 +1430,12 @@ tr:last-child td {
 
     .detail-hero {
         grid-template-columns: 1fr;
+    }
+
+    .extension-current {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 4px;
     }
 
     .checkout-bar {

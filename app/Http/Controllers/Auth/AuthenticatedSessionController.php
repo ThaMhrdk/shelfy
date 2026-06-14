@@ -29,7 +29,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route(Shelfy::homeRouteName($request->user()), absolute: false));
+        return redirect()->route(Shelfy::homeRouteName($request->user()));
     }
 
     /**

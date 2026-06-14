@@ -18,11 +18,18 @@ test('new users can register', function () {
         'password_confirmation' => 'password',
     ]);
 
-    $this->assertAuthenticated();
-    $response->assertRedirect(route('student.dashboard', absolute: false));
+    $this->assertGuest();
+    $response
+        ->assertRedirect(route('login', absolute: false))
+        ->assertSessionHas('status', 'Registrasi berhasil. Silakan login memakai email dan password yang baru dibuat.');
 
     $this->assertDatabaseHas('members', [
         'nim' => '24104999',
         'nama' => 'Test User',
+    ]);
+
+    $this->assertDatabaseHas('users', [
+        'email' => 'test@example.com',
+        'role' => 'mahasiswa',
     ]);
 });

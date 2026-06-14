@@ -20,6 +20,19 @@
                 <div><dt>Status</dt><dd><span class="badge {{ Shelfy::statusClass($loan->status) }}">{{ Shelfy::statusLabel($loan->status) }}</span></dd></div>
                 <div><dt>Catatan</dt><dd>{{ $loan->catatan ?: '-' }}</dd></div>
             </dl>
+
+            @if (! empty($loan->riwayat_perpanjangan))
+                <div class="extension-history">
+                    <h3>Riwayat Perpanjangan</h3>
+                    @foreach (array_reverse($loan->riwayat_perpanjangan) as $extension)
+                        <div>
+                            <strong>{{ $extension['tanggal_lama'] ?? '-' }} menjadi {{ $extension['tanggal_baru'] ?? '-' }}</strong>
+                            <span>{{ $extension['catatan'] ?? 'Tanpa catatan' }}</span>
+                            <small>{{ $extension['diproses_oleh'] ?? 'Pustakawan' }} - {{ $extension['diproses_pada'] ?? '-' }}</small>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
         </article>
 
         <aside class="panel">

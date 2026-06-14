@@ -56,13 +56,7 @@
                             <button class="button tiny primary" type="submit">Buku Diambil</button>
                         </form>
                     @elseif (($canManageLoans ?? false) && ! $loan->isReturned())
-                        <form method="post" action="{{ route('returns.store') }}">
-                            @csrf
-                            <input type="hidden" name="from" value="loans">
-                            <input type="hidden" name="id" value="{{ $id }}">
-                            <input type="hidden" name="tanggal_kembali" value="{{ date('Y-m-d') }}">
-                            <button class="button tiny" type="submit">Kembalikan</button>
-                        </form>
+                        <a class="button tiny" href="{{ route('returns.index') }}">Proses Pengembalian</a>
                     @else
                         @if ($loan->isReturned())
                             <a class="button tiny" href="{{ route('returns.receipt', $id) }}">Nota</a>

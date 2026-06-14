@@ -35,6 +35,10 @@ class Loan extends Model
         'tanggal_diambil',
         'bukti_pengambilan',
         'petugas_pengambilan',
+        'tanggal_perpanjangan_terakhir',
+        'petugas_perpanjangan',
+        'catatan_perpanjangan',
+        'riwayat_perpanjangan',
     ];
 
     protected function casts(): array
@@ -43,6 +47,7 @@ class Loan extends Model
             'hari_terlambat' => 'integer',
             'denda_per_hari' => 'integer',
             'total_denda' => 'integer',
+            'riwayat_perpanjangan' => 'array',
         ];
     }
 

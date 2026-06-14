@@ -18,10 +18,12 @@ test('login screen can be rendered', function () {
 test('users can authenticate using the login screen', function () {
     $user = User::factory()->create();
 
-    $response = $this->post('/login', [
-        'email' => $user->email,
-        'password' => 'password',
-    ]);
+    $response = $this
+        ->withSession(['url.intended' => '/dashboard'])
+        ->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
 
     $this->assertAuthenticated();
     $response->assertRedirect(route('dashboard', absolute: false));
@@ -44,10 +46,12 @@ test('students are redirected to student dashboard after login', function () {
         'member_id' => Shelfy::id($member),
     ]);
 
-    $response = $this->post('/login', [
-        'email' => $user->email,
-        'password' => 'password',
-    ]);
+    $response = $this
+        ->withSession(['url.intended' => '/dashboard'])
+        ->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
 
     $this->assertAuthenticated();
     $response->assertRedirect(route('student.dashboard', absolute: false));
