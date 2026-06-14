@@ -42,13 +42,11 @@
                     <input type="email" name="email" value="{{ old('email', $user->email) }}" required>
                     @error('email') <span class="form-error">{{ $message }}</span> @enderror
                 </label>
-                @if ($user->isStaff())
-                    <label>Foto Profil
-                        <input type="file" name="photo" accept="image/*">
-                        <small>Disimpan di storage/app/public/profile-photos dan diakses lewat public/storage.</small>
-                        @error('photo') <span class="form-error">{{ $message }}</span> @enderror
-                    </label>
-                @endif
+                <label>Foto Profil
+                    <input type="file" name="photo" accept="image/*">
+                    <small>Foto JPG, PNG, atau WebP maksimal 2 MB.</small>
+                    @error('photo') <span class="form-error">{{ $message }}</span> @enderror
+                </label>
                 @if ($user->isStudent())
                     <label>NIM
                         <input value="{{ $user->nim ?: '-' }}" disabled>

@@ -44,8 +44,6 @@ class ProfileController extends Controller
         $request->user()->fill($payload);
 
         if ($request->hasFile('photo')) {
-            abort_unless($request->user()->isStaff(), 403, 'Foto profil petugas hanya untuk admin atau pustakawan.');
-
             if ($request->user()->avatar_path) {
                 Storage::disk('public')->delete((string) $request->user()->avatar_path);
             }

@@ -9,10 +9,17 @@ use App\Support\Shelfy;
 
 test('admin can open shelfy admin pages and nota route exists', function () {
     $user = User::factory()->create();
+    Member::query()->create([
+        'nama' => 'Anggota Terlihat',
+        'nim' => '24104001',
+        'prodi' => 'Sistem Informasi',
+        'email' => 'anggota-terlihat@example.com',
+        'status' => 'aktif',
+    ]);
 
     $this->actingAs($user)->get('/dashboard')->assertOk()->assertDontSee('Migrasi Laravel - Progress');
     $this->actingAs($user)->get('/books')->assertOk()->assertSee('Data Buku')->assertSee('Tambah Buku');
-    $this->actingAs($user)->get('/members')->assertOk()->assertSee('Direktori Anggota');
+    $this->actingAs($user)->get('/members')->assertOk()->assertSee('Direktori Anggota')->assertSee('Anggota Terlihat');
     $this->actingAs($user)->get('/loans')->assertOk()->assertSee('Peminjaman')->assertDontSee('Tambah Peminjaman');
     $this->actingAs($user)->get('/returns')->assertOk()->assertSee('Pengembalian');
     $this->actingAs($user)->get('/recap')->assertOk()->assertSee('Rekapitulasi');

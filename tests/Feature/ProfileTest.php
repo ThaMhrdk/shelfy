@@ -65,6 +65,32 @@ test('staff can upload profile photo', function () {
     Storage::disk('public')->assertExists($user->avatar_path);
 });
 
+test('student can upload profile photo', function () {
+    Storage::fake('public');
+
+    $user = User::factory()->create(['role' => 'mahasiswa']);
+
+    $response = $this
+        ->actingAs($user)
+        ->patch('/profile', [
+            'name' => $user->name,
+            'email' => $user->email,
+            'photo' => UploadedFile::fake()->createWithContent(
+                'mahasiswa.png',
+                base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=')
+            ),
+        ]);
+
+    $response
+        ->assertSessionHasNoErrors()
+        ->assertRedirect('/profile');
+
+    $user->refresh();
+
+    expect($user->avatar_path)->not->toBeNull();
+    Storage::disk('public')->assertExists($user->avatar_path);
+});
+
 test('email verification status is unchanged when the email address is unchanged', function () {
     $user = User::factory()->create();
 
